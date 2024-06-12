@@ -47,7 +47,8 @@ flutter:
         package: id.my.anggaaryas.flutter_secure_enclave
         pluginClass: SecureEnclavePlugin
       ios:
-        pluginClass: SecureEnclavePlugin
+        pluginClass: SwiftSecureEnclavePlugin
+
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
