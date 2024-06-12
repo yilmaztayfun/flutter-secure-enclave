@@ -32,6 +32,8 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        println("Calling Method:"+call.method)
+
         when (call.method) {
             "generateKeyPair" -> {
                 try {
@@ -67,7 +69,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "encrypt" -> {
                 try {
-                   val param = call.arguments as? Map<String, Any>
+                    val param = call.arguments as? Map<String, Any>
                     val message = param?.get("message") as? String ?: ""
                     val tag = param?.get("tag") as? String ?: ""
                     var password: String? = null
@@ -79,6 +81,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
 
                     val encrypted = encrypt(message)
                     result.success(mapOf("status" to "success", "data" to encrypted))
+
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
                 }
@@ -86,6 +89,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "decrypt" -> {
                 try {
                 val param = call.arguments as? Map<String, Any>
+                    println(param)
                 val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
                 // val message = FlutterStandardTypedData(StandardMessageCodec(), messageBytes)
                 val tag = param?.get("tag") as? String ?: ""
@@ -104,6 +108,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "sign" -> {
                 try {
                     val param = call.arguments as? Map<String, Any>
+                    println(param)
                     val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
                     // val message = FlutterStandardTypedData(StandardMessageCodec(), messageBytes)
                     val tag = param?.get("tag") as? String ?: ""
@@ -124,6 +129,8 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
                 try {
                
                     val param = call.arguments as? Map<String, Any>
+                    println(param)
+
                     val tag = param?.get("tag") as? String ?: ""
                     val signatureText = param?.get("signature") as? String ?: ""
                     val plainText = param?.get("plainText") as? String ?: ""
@@ -174,11 +181,11 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
         return Base64.getEncoder().encodeToString(publicKey.encoded)
     }
 
-    private fun encrypt(message: String): String {
+    private fun encrypt(message: String): ByteArray {
         val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
         cipher.init(Cipher.ENCRYPT_MODE, getPublicKeyFromKeyStore())
         val encryptedBytes = cipher.doFinal(message.toByteArray())
-        return Base64.getEncoder().encodeToString(encryptedBytes)
+        return encryptedBytes;//Base64.getEncoder().encodeToString(encryptedBytes)
     }
 
     private fun decrypt(message: ByteArray): String {

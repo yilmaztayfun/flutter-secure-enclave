@@ -1,9 +1,21 @@
-import android.os.Build
-import androidx.annotation.RequiresApi
+//
+//  AccessControlFactory.swift
+//  Pods-Runner
+//
+//  Created by Angga Arya Saputra on 10/08/22.
+//
 
-@RequiresApi(Build.VERSION_CODES.M)
-class AccessControlFactory(private val value: Map<String, Any>) {
-    fun build(): AccessControlParam {
-        return AccessControlParam(value)
+import Foundation
+
+@available(iOS 11.3, *)
+class AccessControlFactory{
+    let value: Dictionary<String, Any>
+    
+    init(value: Dictionary<String, Any>){
+        self.value = value
+    }
+    
+    func build() -> AccessControlParam{
+        return AccessControlParam(value: value)
     }
 }
