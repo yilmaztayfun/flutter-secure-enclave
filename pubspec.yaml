@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   plugin_platform_interface: ^2.0.2
   json_annotation: ^4.5.0
 
@@ -18,7 +20,7 @@ dev_dependencies:
     sdk: flutter
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
   build_runner: ^2.1.11
   json_serializable: ^6.2.0
   convert: ^3.0.2
@@ -41,6 +43,9 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     platforms:
+      android:
+        package: id.my.anggaaryas.flutter_secure_enclave
+        pluginClass: SecureEnclavePlugin
       ios:
         pluginClass: SecureEnclavePlugin
       macos:
