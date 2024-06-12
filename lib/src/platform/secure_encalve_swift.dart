@@ -57,12 +57,9 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
 
   /// remove key pair
   @override
-  Future<ResultModel<bool>> removeKey(String tag) async {
+  Future<ResultModel<bool>> removeKey() async {
     final result = await methodChannel.invokeMethod<dynamic>(
-      'removeKey',
-      {
-        "tag": tag,
-      },
+      'removeKey'
     );
 
     return ResultModel.fromMap(
@@ -77,14 +74,9 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
   /// you can share this public key to others device for sending encrypted data
   /// to your device
   @override
-  Future<ResultModel<String?>> getPublicKey(
-      {required String tag, String? password}) async {
+  Future<ResultModel<String?>> getPublicKey() async {
     final result = await methodChannel.invokeMethod<dynamic>(
-      'getPublicKey',
-      {
-        "tag": tag,
-        "password": password ?? '',
-      },
+      'getPublicKey'
     );
 
     return ResultModel.fromMap(
@@ -98,33 +90,11 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
   /// encryption with secure enclave key pair
   @override
   Future<ResultModel<Uint8List?>> encrypt(
-      {required String message, required String tag, String? password}) async {
+      {required String message}) async {
     final result = await methodChannel.invokeMethod<dynamic>(
       'encrypt',
       {
-        "message": message,
-        "tag": tag,
-        "password": password ?? '',
-      },
-    );
-
-    return ResultModel.fromMap(
-      map: Map<String, dynamic>.from(result),
-      decoder: (rawData) {
-        return rawData as Uint8List?;
-      },
-    );
-  }
-
-  /// encryption with external public key
-  @override
-  Future<ResultModel<Uint8List?>> encryptWithPublicKey(
-      {required String message, required String publicKey}) async {
-    final result = await methodChannel.invokeMethod<dynamic>(
-      'encryptWithPublicKey',
-      {
-        "message": message,
-        "publicKey": publicKey,
+        "message": message
       },
     );
 
@@ -139,15 +109,11 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
   /// decryption with secure enclave key pair
   @override
   Future<ResultModel<String?>> decrypt(
-      {required Uint8List message,
-      required String tag,
-      String? password}) async {
+      {required Uint8List message}) async {
     final result = await methodChannel.invokeMethod<dynamic>(
       'decrypt',
       {
-        "message": message,
-        "tag": tag,
-        "password": password ?? '',
+        "message": message
       },
     );
 
@@ -161,14 +127,9 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
 
   /// check status is tag available or not
   @override
-  Future<ResultModel<bool?>> isKeyCreated(
-      {required String tag, String? password}) async {
+  Future<ResultModel<bool?>> isKeyCreated() async {
     final result = await methodChannel.invokeMethod<dynamic>(
-      'isKeyCreated',
-      {
-        "tag": tag,
-        "password": password ?? '',
-      },
+      'isKeyCreated'
     );
 
     return ResultModel.fromMap(
@@ -182,15 +143,11 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
   /// generate signature from data
   @override
   Future<ResultModel<String?>> sign(
-      {required Uint8List message,
-      required String tag,
-      String? password}) async {
+      {required Uint8List message}) async {
     final result = await methodChannel.invokeMethod<dynamic>(
       'sign',
       {
-        "message": message,
-        "tag": tag,
-        "password": password ?? '',
+        "message": message
       },
     );
 
@@ -206,16 +163,12 @@ class SecureEnclaveSwift extends SecureEnclavePlatform {
   @override
   Future<ResultModel<bool?>> verify(
       {required String plainText,
-      required String signature,
-      required String tag,
-      String? password}) async {
+      required String signature}) async {
     final result = await methodChannel.invokeMethod<dynamic>(
       'verify',
       {
         "plainText": plainText,
-        "signature": signature,
-        "tag": tag,
-        "password": password ?? '',
+        "signature": signature
       },
     );
 

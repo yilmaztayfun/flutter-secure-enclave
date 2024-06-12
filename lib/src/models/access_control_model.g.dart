@@ -8,8 +8,6 @@ part of 'access_control_model.dart';
 
 AccessControlModel _$AccessControlModelFromJson(Map<String, dynamic> json) =>
     AccessControlModel(
-      password: json['password'] as String?,
-      tag: json['tag'] as String,
       options: (json['options'] as List<dynamic>)
           .map((e) => $enumDecode(_$AccessControlOptionEnumMap, e))
           .toList(),
@@ -17,10 +15,8 @@ AccessControlModel _$AccessControlModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$AccessControlModelToJson(AccessControlModel instance) =>
     <String, dynamic>{
-      'password': instance.password,
       'options':
-          instance.options.map((e) => _$AccessControlOptionEnumMap[e]).toList(),
-      'tag': instance.tag,
+          instance.options.map((e) => _$AccessControlOptionEnumMap[e]).toList()
     };
 
 const _$AccessControlOptionEnumMap = {

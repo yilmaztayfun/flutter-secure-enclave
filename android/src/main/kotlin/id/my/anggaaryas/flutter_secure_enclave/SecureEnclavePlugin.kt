@@ -1,5 +1,7 @@
 package id.my.anggaaryas.flutter_secure_enclave
 
+import id.my.anggaaryas.flutter_secure_enclave.model.*
+import id.my.anggaaryas.flutter_secure_enclave.factory.*
 import android.content.Context
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -23,8 +25,7 @@ import io.flutter.plugin.common.StandardMethodCodec.INSTANCE
 
 class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
-    private val KEY_ALIAS = "my_key_alias"
-    private val KEYSTORE_PROVIDER = "AndroidKeyStore"
+    val seCore = SECore()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "secure_enclave")
@@ -35,15 +36,24 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
         when (call.method) {
             "generateKeyPair" -> {
                 try {
-                    generateKeyPair()
-                    result.success(mapOf("status" to "success", "data" to true))
+                    val param = call.arguments as? Map<String, Any?>
+                    if(param != null){
+                        val accessControlValue = param["accessControl"] as? Map<String, Any?>
+                        if(accessControlValue != null){
+                            val accessControlParam = AccessControlFactory(accessControlValue).build()
+                            seCore.generateKeyPair(accessControlParam)
+                            result.success(mapOf("status" to "success", "data" to true))
+                        }                        
+                    }else{
+                        result.error("ERROR", "accessControl is empty", null)
+                    }
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
                 }
             }
             "removeKey" -> {
                 try {
-                    deleteKeyPair()
+                    seCore.removeKey()
                     result.success(mapOf("status" to "success", "data" to true))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -51,7 +61,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "isKeyCreated" -> {
                 try {
-                    val isCreated = isKeyCreated()
+                    val isCreated = seCore.isKeyCreated()
                     result.success(mapOf("status" to "success", "data" to isCreated))
                 } catch (e: Exception) {
                     result.success(mapOf("status" to "success", "data" to false))
@@ -59,7 +69,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "getPublicKey" -> {
                 try {
-                    val publicKey = getPublicKey()
+                    val publicKey = seCore.getPublicKey()
                     result.success(mapOf("status" to "success", "data" to publicKey))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -67,17 +77,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "encrypt" -> {
                 try {
-                   val param = call.arguments as? Map<String, Any>
+                    val param = call.arguments as? Map<String, Any>
                     val message = param?.get("message") as? String ?: ""
-                    val tag = param?.get("tag") as? String ?: ""
-                    var password: String? = null
-                    param?.let {
-                        if (it.containsKey("password")) {
-                            password = it["password"] as? String
-                        }
-                    }
-
-                    val encrypted = encrypt(message)
+                    val encrypted = seCore.encrypt(message)
                     result.success(mapOf("status" to "success", "data" to encrypted))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -85,17 +87,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "decrypt" -> {
                 try {
-                val param = call.arguments as? Map<String, Any>
-                val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
-                // val message = FlutterStandardTypedData(StandardMessageCodec(), messageBytes)
-                val tag = param?.get("tag") as? String ?: ""
-                var password: String? = null
-                param?.let {
-                    if (it.containsKey("password")) {
-                        password = it["password"] as? String
-                    }
-                }
-                    val decrypted = decrypt(messageBytes)
+                    val param = call.arguments as? Map<String, Any>
+                    val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
+                    val decrypted = seCore.decrypt(messageBytes)
                     result.success(mapOf("status" to "success", "data" to decrypted))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -105,16 +99,7 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
                 try {
                     val param = call.arguments as? Map<String, Any>
                     val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
-                    // val message = FlutterStandardTypedData(StandardMessageCodec(), messageBytes)
-                    val tag = param?.get("tag") as? String ?: ""
-                    var password: String? = null
-                    param?.let {
-                        if (it.containsKey("password")) {
-                            password = it["password"] as? String
-                        }
-                    }
-
-                    val signature = sign(messageBytes)
+                    val signature = seCore.sign(messageBytes)
                     result.success(mapOf("status" to "success", "data" to signature))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -122,19 +107,10 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "verify" -> {
                 try {
-               
                     val param = call.arguments as? Map<String, Any>
-                    val tag = param?.get("tag") as? String ?: ""
                     val signatureText = param?.get("signature") as? String ?: ""
                     val plainText = param?.get("plainText") as? String ?: ""
-                    var password: String? = null
-                    param?.let {
-                        if (it.containsKey("password")) {
-                            password = it["password"] as? String
-                        }
-                    }
-
-                    val isValid = verify(plainText.toByteArray(), signatureText.toByteArray())
+                    val isValid = seCore.verify(plainText, signatureText)
                     result.success(mapOf("status" to "success", "data" to isValid))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -144,75 +120,6 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
                 result.notImplemented()
             }
         }
-    }
-
-    private fun generateKeyPair() {
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA", KEYSTORE_PROVIDER)
-        keyPairGenerator.initialize(KeyGenParameterSpec.Builder(KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT or KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
-            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
-            .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
-            .setKeySize(2048)
-            .build())
-        keyPairGenerator.generateKeyPair()
-    }
-
-    private fun deleteKeyPair() {
-        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        keyStore.deleteEntry(KEY_ALIAS)
-    }
-
-    private fun isKeyCreated(): Boolean {
-        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        return keyStore.containsAlias(KEY_ALIAS)
-    }
-
-    private fun getPublicKey(): String {
-        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        val publicKey = keyStore.getCertificate(KEY_ALIAS).publicKey
-        return Base64.getEncoder().encodeToString(publicKey.encoded)
-    }
-
-    private fun encrypt(message: String): String {
-        val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, getPublicKeyFromKeyStore())
-        val encryptedBytes = cipher.doFinal(message.toByteArray())
-        return Base64.getEncoder().encodeToString(encryptedBytes)
-    }
-
-    private fun decrypt(message: ByteArray): String {
-        val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.DECRYPT_MODE, getPrivateKeyFromKeyStore())
-        val decryptedBytes = cipher.doFinal(message)
-        return String(decryptedBytes)
-    }
-
-    private fun sign(message: ByteArray): String {
-        val privateKey = getPrivateKeyFromKeyStore()
-        val signature = Signature.getInstance("SHA256withRSA")
-        signature.initSign(privateKey)
-        signature.update(message)
-        val signatureBytes = signature.sign()
-        return Base64.getEncoder().encodeToString(signatureBytes)
-    }
-
-    private fun verify(plainText: ByteArray, signatureBytes: ByteArray): Boolean {
-        val publicKey = getPublicKeyFromKeyStore()
-        val signature = Signature.getInstance("SHA256withRSA")
-        signature.initVerify(publicKey)
-        signature.update(plainText)
-        return signature.verify(signatureBytes)
-    }
-
-    private fun getPublicKeyFromKeyStore(): PublicKey {
-        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        return keyStore.getCertificate(KEY_ALIAS).publicKey
-    }
-
-    private fun getPrivateKeyFromKeyStore(): PrivateKey {
-        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        return keyStore.getKey(KEY_ALIAS, null) as PrivateKey
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPluginBinding) {

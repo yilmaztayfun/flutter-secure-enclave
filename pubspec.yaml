@@ -48,8 +48,6 @@ flutter:
         pluginClass: SecureEnclavePlugin
       ios:
         pluginClass: SecureEnclavePlugin
-      macos:
-        pluginClass: SecureEnclavePlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

@@ -25,7 +25,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagNormal).then((result){
+        await secureEnclave.removeKey().then((result){
 
         });
       });
@@ -36,7 +36,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagBiometric).then((result){
+        await secureEnclave.removeKey().then((result){
 
         });
       });
@@ -47,7 +47,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagPassword).then((result){
+        await secureEnclave.removeKey().then((result){
 
         });
       });
@@ -58,7 +58,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagPasswordBiometric).then((result){
+        await secureEnclave.removeKey().then((result){
 
         });
       });
@@ -73,7 +73,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagNormal, options: [AccessControlOption.privateKeyUsage])).then((result){
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage])).then((result){
           checkResult(
               result: result,
               onSuccess: (){
@@ -89,7 +89,7 @@ void main(){
 
         SecureEnclave secureEnclave = SecureEnclave();
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagBiometric, options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet])).then((result){
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet])).then((result){
           checkResult(
               result: result,
               onSuccess: (){
@@ -105,7 +105,7 @@ void main(){
 
         SecureEnclave secureEnclave = SecureEnclave();
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagPassword, options: [AccessControlOption.privateKeyUsage, AccessControlOption.applicationPassword], password: appPassword)).then((result){
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.applicationPassword])).then((result){
           checkResult(
               result: result,
               onSuccess: (){
@@ -121,7 +121,7 @@ void main(){
 
         SecureEnclave secureEnclave = SecureEnclave();
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagPasswordBiometric, options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet, AccessControlOption.applicationPassword], password: appPassword)).then((result){
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet, AccessControlOption.applicationPassword])).then((result){
           checkResult(
               result: result,
               onSuccess: (){
@@ -140,7 +140,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagNormal).then((result){
+        await secureEnclave.removeKey().then((result){
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -153,7 +153,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagBiometric).then((result){
+        await secureEnclave.removeKey().then((result){
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -166,7 +166,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagPassword).then((result){
+        await secureEnclave.removeKey().then((result){
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -179,7 +179,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagPasswordBiometric).then((result){
+        await secureEnclave.removeKey().then((result){
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -192,7 +192,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey('adasdasdasdasdas').then((result){
+        await secureEnclave.removeKey().then((result){
           checkResult(result: result, onSuccess: (){
             expect(result.value, false);
           });
@@ -216,7 +216,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.encrypt(message: cleartext, tag: tagNormal).then((result){
+        await secureEnclave.encrypt(message: cleartext).then((result){
           checkResult(result: result, onSuccess: (){
             encrypted = result.value;
 
@@ -236,7 +236,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagNormal).then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             expect(result.value == cleartext, true);
           });
@@ -255,7 +255,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.encrypt(message: cleartext, tag: tagBiometric).then((result){
+        await secureEnclave.encrypt(message: cleartext).then((result){
           checkResult(result: result, onSuccess: (){
             encrypted = result.value;
 
@@ -274,7 +274,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagBiometric).then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             expect(result.value == cleartext, true);
           });
@@ -293,7 +293,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.encrypt(message: cleartext, tag: tagPassword).then((result){
+        await secureEnclave.encrypt(message: cleartext).then((result){
           checkResult(result: result, onSuccess: (){
             encrypted = result.value;
 
@@ -313,7 +313,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagPassword, password: appPassword).then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             expect(result.value == cleartext, true);
           });
@@ -329,7 +329,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagPassword, password: '9900').then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             throw('decrypt should fail...');
           }, onFail: (){
@@ -350,7 +350,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.encrypt(message: cleartext, tag: tagPasswordBiometric).then((result){
+        await secureEnclave.encrypt(message: cleartext).then((result){
           checkResult(result: result, onSuccess: (){
             encrypted = result.value;
 
@@ -370,7 +370,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagPasswordBiometric, password: appPassword).then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             expect(result.value == cleartext, true);
           });
@@ -386,7 +386,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.decrypt(message: encrypted!, tag: tagPasswordBiometric, password: '9900').then((result) {
+        await secureEnclave.decrypt(message: encrypted!).then((result) {
           checkResult(result: result, onSuccess: (){
             throw('decrypt should fail...');
           }, onFail: (){
@@ -414,7 +414,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagNormal).then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             signature = result.value;
             expect(signature != null, true);
@@ -433,7 +433,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: clearText, signature: signature!, tag: tagNormal).then((result) async{
+        await secureEnclave.verify(plainText: clearText, signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -450,7 +450,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!, tag: tagNormal).then((result) async{
+        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, false);
           });
@@ -469,7 +469,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagBiometric).then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             signature = result.value;
             expect(signature != null, true);
@@ -488,7 +488,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: clearText, signature: signature!, tag: tagBiometric).then((result) async{
+        await secureEnclave.verify(plainText: clearText, signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -505,7 +505,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!, tag: tagBiometric).then((result) async{
+        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, false);
           });
@@ -524,7 +524,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagPassword, password: appPassword).then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             signature = result.value;
             expect(signature != null, true);
@@ -539,7 +539,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagPassword, password: '9900').then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             throw('signing should fail...');
           }, onFail: (){
@@ -558,7 +558,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: clearText, signature: signature!, tag: tagPassword, ).then((result) async{
+        await secureEnclave.verify(plainText: clearText, signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -575,7 +575,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!, tag: tagPassword,).then((result) async{
+        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, false);
           });
@@ -594,7 +594,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagPasswordBiometric, password: appPassword).then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             signature = result.value;
             expect(signature != null, true);
@@ -609,7 +609,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits), tag: tagPasswordBiometric, password: '9900').then((result){
+        await secureEnclave.sign(message: Uint8List.fromList(clearText.codeUnits)).then((result){
           checkResult(result: result, onSuccess: (){
             throw('signing should fail...');
           }, onFail: (){
@@ -628,7 +628,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: clearText, signature: signature!, tag: tagPasswordBiometric,).then((result) async{
+        await secureEnclave.verify(plainText: clearText, signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, true);
           });
@@ -645,7 +645,7 @@ void main(){
         await widgetTester.pumpAndSettle();
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!, tag: tagPasswordBiometric).then((result) async{
+        await secureEnclave.verify(plainText: 'asdfghjkl', signature: signature!).then((result) async{
           checkResult(result: result, onSuccess: (){
             expect(result.value, false);
           });
@@ -671,7 +671,7 @@ void main(){
 
       SecureEnclave secureEnclave = SecureEnclave();
 
-      await secureEnclave.encrypt(message: clearText, tag: tagPassword).then((result) {
+      await secureEnclave.encrypt(message: clearText).then((result) {
         checkResult(result: result, onSuccess: (){
           encrypted = result.value;
           expect(encrypted != null, true);
@@ -679,10 +679,11 @@ void main(){
         });
       });
 
-      await secureEnclave.decrypt(message: encrypted!, tag: tagPassword).then((result){
+      await secureEnclave.decrypt(message: encrypted!).then((result){
 
       });
 
+      // ignore: avoid_print
       print('this test should show ios password form pop up');
 
     });
@@ -699,34 +700,34 @@ Future<void> requireSetup(String tagNormal, String tagBiometric, String tagPassw
 
         SecureEnclave secureEnclave = SecureEnclave();
 
-        await secureEnclave.removeKey(tagNormal);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagBiometric);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagPassword);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagPasswordBiometric);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagNormal, options: [AccessControlOption.privateKeyUsage]));
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage]));
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagBiometric, options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet]));
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet]));
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagPassword, options: [AccessControlOption.privateKeyUsage, AccessControlOption.applicationPassword], password: appPassword));
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.applicationPassword]));
 
-        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(tag: tagPasswordBiometric, options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet, AccessControlOption.applicationPassword], password: appPassword));
+        await secureEnclave.generateKeyPair(accessControl: AccessControlModel(options: [AccessControlOption.privateKeyUsage, AccessControlOption.biometryCurrentSet, AccessControlOption.applicationPassword]));
 
   });
 
   tearDownAll(() async{
 
         SecureEnclave secureEnclave = SecureEnclave();
-        await secureEnclave.removeKey(tagNormal);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagBiometric);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagPassword);
+        await secureEnclave.removeKey();
 
-        await secureEnclave.removeKey(tagPasswordBiometric);
+        await secureEnclave.removeKey();
   });
 }
 

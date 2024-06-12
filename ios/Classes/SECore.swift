@@ -15,41 +15,35 @@ protocol SECoreProtocol {
     func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey
     
     // remove key from secure enclave
-    func removeKey(tag: String) throws -> Bool
-    
-    // get SecKey key from secure enclave (private method)
-    func getSecKey(tag: String, password: String?) throws -> SecKey?
+    func removeKey() throws -> Bool
     
     // get status SecKey key from secure enclave (private method)
-    func isKeyCreated(tag: String, password: String?) throws -> Bool?
+    func isKeyCreated() throws -> Bool?
     
     // get publicKey key from secure enclave
-    func getPublicKey(tag: String, password: String?) throws -> String?
+    func getPublicKey() throws -> String?
     
     // encryption
-    func encrypt(message: String, tag: String, password: String?) throws -> FlutterStandardTypedData?
-    
-    // encryption with base64 Public key
-    func encryptWithPublicKey(message: String, publicKey: String) throws -> FlutterStandardTypedData?
+    func encrypt(message: String) throws -> FlutterStandardTypedData?
     
     // decryption
-    func decrypt(message: Data, tag: String, password: String?) throws -> String?
+    func decrypt(message: Data) throws -> String?
     
     // sign
-    func sign(tag: String, password: String?, message: Data) throws -> String?
+    func sign(message: Data) throws -> String?
     
     // verify
-    func verify(tag: String, password: String?, plainText: String, signature: String) throws -> Bool
+    func verify(plainText: String, signature: String) throws -> Bool
 }
 
 
 @available(iOS 11.3, *)
 class SECore : SECoreProtocol {
-    
+    let KEY_ALIAS = "mtls.burgan.com.tr"
     func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey  {
         // options
         let secAccessControlCreateFlags: SecAccessControlCreateFlags = accessControlParam.option
-        let secAttrApplicationTag: Data? = accessControlParam.tag.data(using: .utf8)
+        let secAttrApplicationTag: Data? = KEY_ALIAS.data(using: .utf8)
         var accessError: Unmanaged<CFError>?
         let secAttrAccessControl =
         SecAccessControlCreateWithFlags(
@@ -92,17 +86,17 @@ class SECore : SECoreProtocol {
                 ]
             }
             
-            // cek kalau pakai app password, tambahkan password nya
-            if accessControlParam.option.contains(.applicationPassword) {
-               let context = LAContext()
-               var newPassword : Data?
-               if accessControlParam.password != "" {
-                   newPassword = accessControlParam.password?.data(using: .utf8)
-               }
-               context.setCredential(newPassword, type: .applicationPassword)
+            // // cek kalau pakai app password, tambahkan password nya
+            // if accessControlParam.option.contains(.applicationPassword) {
+            //    let context = LAContext()
+            //    var newPassword : Data?
+            //    if accessControlParam.password != "" {
+            //        newPassword = accessControlParam.password?.data(using: .utf8)
+            //    }
+            //    context.setCredential(newPassword, type: .applicationPassword)
                 
-               parameterTemp[kSecUseAuthenticationContext as String] = context
-            }
+            //    parameterTemp[kSecUseAuthenticationContext as String] = context
+            // }
             
             // convert ke CFDictinery
             parameter = parameterTemp as CFDictionary
@@ -122,8 +116,8 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func removeKey(tag: String) throws -> Bool {
-        let secAttrApplicationTag : Data = tag.data(using: .utf8)!
+    func removeKey() throws -> Bool {
+        let secAttrApplicationTag : Data = KEY_ALIAS.data(using: .utf8)!
         let query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
             kSecAttrApplicationTag as String    : secAttrApplicationTag
@@ -142,8 +136,8 @@ class SECore : SECoreProtocol {
         return true
     }
     
-    internal func getSecKey(tag: String, password: String?) throws -> SecKey?  {
-        let secAttrApplicationTag = tag.data(using: .utf8)!
+    internal func getSecKey() throws -> SecKey?  {
+        let secAttrApplicationTag = KEY_ALIAS.data(using: .utf8)!
         
         var query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
@@ -153,23 +147,11 @@ class SECore : SECoreProtocol {
             kSecReturnRef as String             : true
         ]
         
-        if let password = password {
-            let context = LAContext()
-            var newPassword : Data?
-            if password != "" {
-                newPassword = password.data(using: .utf8)
-            }
-            context.setCredential(newPassword, type: .applicationPassword)
-             
-            query[kSecUseAuthenticationContext as String] = context
-        }
-        
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess else {
             throw  NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: [NSLocalizedDescriptionKey: SecCopyErrorMessageString(status,nil) ?? "Undefined error"])
         }
-        
         
         if let item = item {
             return (item as! SecKey)
@@ -178,21 +160,21 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func isKeyCreated(tag: String, password: String?) throws -> Bool?  {
+    func isKeyCreated() throws -> Bool?  {
         do{
-            let result =  try getSecKey(tag: tag, password: password)
+            let result =  try getSecKey()
             return result != nil ? true : false
         } catch{
             throw error
         }
     }
     
-    func getPublicKey(tag: String, password: String?) throws -> String? {
+    func getPublicKey() throws -> String? {
         let secKey : SecKey
         let publicKey : SecKey
         
         do{
-            secKey = try getSecKey(tag: tag, password: password)!
+            secKey = try getSecKey()!
             publicKey = SecKeyCopyPublicKey(secKey)!
         } catch{
             throw error
@@ -206,12 +188,12 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func encrypt(message: String, tag: String, password: String?) throws -> FlutterStandardTypedData?  {
+    func encrypt(message: String) throws -> FlutterStandardTypedData?  {
         let secKey : SecKey
         let publicKey : SecKey
         
         do{
-            secKey = try getSecKey(tag: tag, password: password)!
+            secKey = try getSecKey()!
             publicKey = SecKeyCopyPublicKey(secKey)!
         } catch{
             throw error
@@ -241,46 +223,11 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func encryptWithPublicKey(message: String, publicKey: String) throws -> FlutterStandardTypedData?  {
-        let newPublicKeyData = Data(base64Encoded: publicKey, options: [])
-        let newPublicParams: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeEC,
-            kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
-            kSecAttrKeySizeInBits as String: 256
-        ]
-        guard let newPublicKey = SecKeyCreateWithData(newPublicKeyData! as CFData, newPublicParams as CFDictionary, nil) else {
-            throw CustomError.runtimeError("Cannot encrypt data")
-        }
-        
-        let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
-        guard SecKeyIsAlgorithmSupported(newPublicKey, .encrypt, algorithm) else {
-            throw CustomError.runtimeError("Algorithm not suppoort")
-        }
-        
-        var error: Unmanaged<CFError>?
-        let clearTextData = message.data(using: .utf8)!
-        let cipherTextData = SecKeyCreateEncryptedData(
-            newPublicKey,
-            algorithm,
-            clearTextData as CFData,
-            &error) as Data?
-        
-        if let error = error {
-            throw error.takeRetainedValue() as Error
-        }
-        
-        if let cipherTextData = cipherTextData {
-            return FlutterStandardTypedData(bytes: cipherTextData)
-        } else {
-            throw CustomError.runtimeError("Cannot encrypt data")
-        }
-    }
-    
-    func decrypt(message: Data, tag: String, password: String?) throws -> String?  {
+    func decrypt(message: Data) throws -> String?  {
         let secKey : SecKey
         
         do{
-            secKey = try getSecKey(tag: tag, password: password)!
+            secKey = try getSecKey()!
         } catch{
             throw error
         }
@@ -311,11 +258,11 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func sign(tag: String, password: String?, message: Data) throws -> String?{
+    func sign(message: Data) throws -> String?{
         let secKey : SecKey
         
         do{
-            secKey = try getSecKey(tag: tag, password: password)!
+            secKey = try getSecKey()!
         } catch {
             throw error
         }
@@ -337,7 +284,7 @@ class SECore : SECoreProtocol {
     }
     
     
-    func verify(tag: String, password: String?, plainText: String, signature: String) throws -> Bool {
+    func verify(plainText: String, signature: String) throws -> Bool {
         let externalKeyB64String : String
         
         guard Data(base64Encoded: signature) != nil else {
@@ -345,7 +292,7 @@ class SECore : SECoreProtocol {
         }
         
         do{
-            externalKeyB64String = try getPublicKey(tag: tag, password: password)!
+            externalKeyB64String = try getPublicKey()!
         } catch{
             throw error
         }

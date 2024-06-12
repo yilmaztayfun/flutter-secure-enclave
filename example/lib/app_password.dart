@@ -28,7 +28,7 @@ class _AppPasswordState extends State<AppPassword> {
         actions: [
           IconButton(
               onPressed: () {
-                _secureEnclavePlugin.removeKey(tag.text);
+                _secureEnclavePlugin.removeKey();
               },
               icon: const Icon(Icons.delete))
         ],
@@ -37,26 +37,6 @@ class _AppPasswordState extends State<AppPassword> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Tag'),
-                const SizedBox(
-                  height: 5,
-                ),
-                TextField(
-                  controller: tag,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -77,26 +57,6 @@ class _AppPasswordState extends State<AppPassword> {
             const SizedBox(
               height: 20,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Password'),
-                const SizedBox(
-                  height: 5,
-                ),
-                TextField(
-                  controller: appPassword,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
             ElevatedButton(
               onPressed: () async {
                 // if (tag.text.isNotEmpty &&
@@ -105,7 +65,7 @@ class _AppPasswordState extends State<AppPassword> {
                 try {
                   /// check if tag already on keychain
                   final bool status =
-                      (await _secureEnclavePlugin.isKeyCreated(tag: tag.text))
+                      (await _secureEnclavePlugin.isKeyCreated())
                               .value ??
                           false;
 
@@ -114,14 +74,12 @@ class _AppPasswordState extends State<AppPassword> {
                     ResultModel res =
                         await _secureEnclavePlugin.generateKeyPair(
                       accessControl: AccessControlModel(
-                        password: appPassword.text,
                         options: [
                           AccessControlOption.applicationPassword,
                           // AccessControlOption.or,
                           // AccessControlOption.devicePasscode,
                           AccessControlOption.privateKeyUsage,
-                        ],
-                        tag: tag.text,
+                        ]
                       ),
                     );
 
@@ -135,13 +93,12 @@ class _AppPasswordState extends State<AppPassword> {
                   /// encrypt with app password
                   ResultModel cipherUint8List =
                       (await _secureEnclavePlugin.encrypt(
-                    message: plainText.text,
-                    tag: tag.text,
-                    password: appPassword.text,
+                    message: plainText.text
                   ));
                   if (cipherUint8List.value != null) {
-                    cipherText.text =
-                        hex.encode(cipherUint8List.value).toString();
+                    cipherText.text = hex.encode(cipherUint8List.value).toString();
+                    //base64Encode(cipherUint8List.value);
+                        // hex.encode(cipherUint8List.value).toString();
                     setState(() {});
                   } else {
                     if (!mounted) return;
@@ -185,10 +142,10 @@ class _AppPasswordState extends State<AppPassword> {
                 if (cipherText.text.isNotEmpty) {
                   try {
                     /// decrypt with app password
+                    // final message = base64Decode(cipherText.text);
+                    final message = Uint8List.fromList(hex.decode(cipherText.text));
                     ResultModel plain = (await _secureEnclavePlugin.decrypt(
-                      message: Uint8List.fromList(hex.decode(cipherText.text)),
-                      tag: tag.text,
-                      password: appPassword.text,
+                      message: message
                     ));
 
                     if (plain.value != null) {

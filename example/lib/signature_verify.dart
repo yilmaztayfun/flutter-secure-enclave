@@ -28,7 +28,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
         actions: [
           IconButton(
               onPressed: () {
-                _secureEnclavePlugin.removeKey(tag.text);
+                _secureEnclavePlugin.removeKey();
               },
               icon: const Icon(Icons.delete))
         ],
@@ -37,26 +37,6 @@ class _SignatureVerifyState extends State<SignatureVerify> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Tag'),
-                const SizedBox(
-                  height: 5,
-                ),
-                TextField(
-                  controller: tag,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -77,26 +57,6 @@ class _SignatureVerifyState extends State<SignatureVerify> {
             const SizedBox(
               height: 20,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Password'),
-                const SizedBox(
-                  height: 5,
-                ),
-                TextField(
-                  controller: appPassword,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
             ElevatedButton(
               onPressed: () async {
                 // if (tag.text.isNotEmpty &&
@@ -105,7 +65,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                 try {
                   /// check if tag already on keychain
                   final bool status =
-                      (await _secureEnclavePlugin.isKeyCreated(tag: tag.text))
+                      (await _secureEnclavePlugin.isKeyCreated())
                               .value ??
                           false;
 
@@ -113,23 +73,19 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                     /// create key on keychain
                     await _secureEnclavePlugin.generateKeyPair(
                       accessControl: AccessControlModel(
-                        password: appPassword.text,
                         options: [
                           AccessControlOption.applicationPassword,
                           // AccessControlOption.or,
                           // AccessControlOption.devicePasscode,
                           AccessControlOption.privateKeyUsage,
-                        ],
-                        tag: tag.text,
+                        ]
                       ),
                     );
                   }
 
                   /// sign with app password
                   String signature = (await _secureEnclavePlugin.sign(
-                        message: Uint8List.fromList(plainText.text.codeUnits),
-                        tag: tag.text,
-                        password: appPassword.text,
+                        message: Uint8List.fromList(plainText.text.codeUnits)
                       ))
                           .value ??
                       '';
@@ -174,9 +130,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                     /// verify with app password
                     bool res = (await _secureEnclavePlugin.verify(
                           plainText: plainText.text,
-                          signature: signatureText.text,
-                          tag: tag.text,
-                          password: appPassword.text,
+                          signature: signatureText.text
                         ))
                             .value ??
                         false;
