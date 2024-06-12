@@ -14,6 +14,7 @@ export 'src/models/result_model.dart';
 export 'src/models/error_model.dart';
 
 class SecureEnclave implements SecureEnclaveBase {
+  
   /// decryption with secure enclave key pair
   @override
   Future<ResultModel<String?>> decrypt(
