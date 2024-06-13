@@ -319,5 +319,4 @@ class SECore : SECoreProtocol {
         let verify = SecKeyVerifySignature(newPublicKey, SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256, messageData as CFData, signatureData as CFData, nil)
         return verify
     }
-    
 }

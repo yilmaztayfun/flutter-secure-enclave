@@ -12,10 +12,8 @@ class SignatureVerify extends StatefulWidget {
 }
 
 class _SignatureVerifyState extends State<SignatureVerify> {
-  TextEditingController tag = TextEditingController();
   TextEditingController plainText = TextEditingController();
   TextEditingController plainText2 = TextEditingController();
-  TextEditingController appPassword = TextEditingController();
   TextEditingController signatureText = TextEditingController();
 
   final _secureEnclavePlugin = SecureEnclave();

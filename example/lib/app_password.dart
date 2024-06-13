@@ -11,11 +11,9 @@ class AppPassword extends StatefulWidget {
   State<AppPassword> createState() => _AppPasswordState();
 }
 
-class _AppPasswordState extends State<AppPassword> {
-  TextEditingController tag = TextEditingController();
+class _AppPasswordState extends State<AppPassword> { 
   TextEditingController plainText = TextEditingController();
   TextEditingController plainText2 = TextEditingController();
-  TextEditingController appPassword = TextEditingController();
   TextEditingController cipherText = TextEditingController();
 
   final _secureEnclavePlugin = SecureEnclave();
