@@ -25,15 +25,18 @@ part 'access_control_model.g.dart';
 @JsonSerializable()
 class AccessControlModel {
   final List<AccessControlOption> options;
+  final String tag;
 
   AccessControlModel._({
-    required this.options
+    required this.options,
+    required this.tag
   });
 
   factory AccessControlModel({
     required List<AccessControlOption> options,
+    required String tag,
   }) {
-    return AccessControlModel._(options: options);
+    return AccessControlModel._(options: options, tag: tag);
   }
 
   factory AccessControlModel.fromJson(Map<String, dynamic> json) =>

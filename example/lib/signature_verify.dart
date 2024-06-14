@@ -12,6 +12,7 @@ class SignatureVerify extends StatefulWidget {
 }
 
 class _SignatureVerifyState extends State<SignatureVerify> {
+  TextEditingController tag = TextEditingController();
   TextEditingController plainText = TextEditingController();
   TextEditingController plainText2 = TextEditingController();
   TextEditingController signatureText = TextEditingController();
@@ -26,7 +27,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
         actions: [
           IconButton(
               onPressed: () {
-                _secureEnclavePlugin.removeKey();
+                _secureEnclavePlugin.removeKey(tag.text);
               },
               icon: const Icon(Icons.delete))
         ],
@@ -35,6 +36,26 @@ class _SignatureVerifyState extends State<SignatureVerify> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tag'),
+                const SizedBox(
+                  height: 5,
+                ),
+                TextField(
+                  controller: tag,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,7 +84,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                 try {
                   /// check if tag already on keychain
                   final bool status =
-                      (await _secureEnclavePlugin.isKeyCreated())
+                      (await _secureEnclavePlugin.isKeyCreated(tag.text))
                               .value ??
                           false;
 
@@ -76,13 +97,15 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                           // AccessControlOption.or,
                           // AccessControlOption.devicePasscode,
                           AccessControlOption.privateKeyUsage,
-                        ]
+                        ],
+                        tag: tag.text
                       ),
                     );
                   }
 
                   /// sign with app password
                   String signature = (await _secureEnclavePlugin.sign(
+                        tag: tag.text,  
                         message: Uint8List.fromList(plainText.text.codeUnits)
                       ))
                           .value ??
@@ -127,6 +150,7 @@ class _SignatureVerifyState extends State<SignatureVerify> {
                   try {
                     /// verify with app password
                     bool res = (await _secureEnclavePlugin.verify(
+                          tag: tag.text,
                           plainText: plainText.text,
                           signature: signatureText.text
                         ))

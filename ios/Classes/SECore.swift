@@ -15,35 +15,34 @@ protocol SECoreProtocol {
     func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey
     
     // remove key from secure enclave
-    func removeKey() throws -> Bool
+    func removeKey(tag: String) throws -> Bool
     
     // get status SecKey key from secure enclave (private method)
-    func isKeyCreated() throws -> Bool?
+    func isKeyCreated(tag: String) throws -> Bool?
     
     // get publicKey key from secure enclave
-    func getPublicKey() throws -> String?
+    func getPublicKey(tag: String) throws -> String?
     
     // encryption
-    func encrypt(message: String) throws -> FlutterStandardTypedData?
+    func encrypt(message: String, tag: String) throws -> FlutterStandardTypedData?
     
     // decryption
-    func decrypt(message: Data) throws -> String?
+    func decrypt(message: Data, tag: String) throws -> String?
     
     // sign
-    func sign(message: Data) throws -> String?
+    func sign(tag: String, message: Data) throws -> String?
     
     // verify
-    func verify(plainText: String, signature: String) throws -> Bool
+    func verify(tag: String, plainText: String, signature: String) throws -> Bool
 }
 
 
 @available(iOS 11.3, *)
 class SECore : SECoreProtocol {
-    let KEY_ALIAS = "mtls.burgan.com.tr"
     func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey  {
         // options
         let secAccessControlCreateFlags: SecAccessControlCreateFlags = accessControlParam.option
-        let secAttrApplicationTag: Data? = KEY_ALIAS.data(using: .utf8)
+        let secAttrApplicationTag: Data? = accessControlParam.tag.data(using: .utf8)
         var accessError: Unmanaged<CFError>?
         let secAttrAccessControl =
         SecAccessControlCreateWithFlags(
@@ -116,8 +115,8 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func removeKey() throws -> Bool {
-        let secAttrApplicationTag : Data = KEY_ALIAS.data(using: .utf8)!
+    func removeKey(tag: String) throws -> Bool {
+        let secAttrApplicationTag : Data = tag.data(using: .utf8)!
         let query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
             kSecAttrApplicationTag as String    : secAttrApplicationTag
@@ -136,8 +135,8 @@ class SECore : SECoreProtocol {
         return true
     }
     
-    internal func getSecKey() throws -> SecKey?  {
-        let secAttrApplicationTag = KEY_ALIAS.data(using: .utf8)!
+    internal func getSecKey(tag: String) throws -> SecKey?  {
+        let secAttrApplicationTag = tag.data(using: .utf8)!
         
         var query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
@@ -160,21 +159,21 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func isKeyCreated() throws -> Bool?  {
+    func isKeyCreated(tag: String) throws -> Bool?  {
         do{
-            let result =  try getSecKey()
+            let result =  try getSecKey(tag: tag)
             return result != nil ? true : false
         } catch{
             throw error
         }
     }
     
-    func getPublicKey() throws -> String? {
+    func getPublicKey(tag: String) throws -> String? {
         let secKey : SecKey
         let publicKey : SecKey
         
         do{
-            secKey = try getSecKey()!
+            secKey = try getSecKey(tag: tag)!
             publicKey = SecKeyCopyPublicKey(secKey)!
         } catch{
             throw error
@@ -188,12 +187,12 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func encrypt(message: String) throws -> FlutterStandardTypedData?  {
+    func encrypt(message: String, tag: String) throws -> FlutterStandardTypedData?  {
         let secKey : SecKey
         let publicKey : SecKey
         
         do{
-            secKey = try getSecKey()!
+            secKey = try getSecKey(tag: tag)!
             publicKey = SecKeyCopyPublicKey(secKey)!
         } catch{
             throw error
@@ -223,11 +222,11 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func decrypt(message: Data) throws -> String?  {
+    func decrypt(message: Data, tag: String) throws -> String?  {
         let secKey : SecKey
         
         do{
-            secKey = try getSecKey()!
+            secKey = try getSecKey(tag: tag)!
         } catch{
             throw error
         }
@@ -258,11 +257,11 @@ class SECore : SECoreProtocol {
         }
     }
     
-    func sign(message: Data) throws -> String?{
+    func sign(tag: String, message: Data) throws -> String?{
         let secKey : SecKey
         
         do{
-            secKey = try getSecKey()!
+            secKey = try getSecKey(tag: tag)!
         } catch {
             throw error
         }
@@ -284,7 +283,7 @@ class SECore : SECoreProtocol {
     }
     
     
-    func verify(plainText: String, signature: String) throws -> Bool {
+    func verify(tag: String, plainText: String, signature: String) throws -> Bool {
         let externalKeyB64String : String
         
         guard Data(base64Encoded: signature) != nil else {
@@ -292,7 +291,7 @@ class SECore : SECoreProtocol {
         }
         
         do{
-            externalKeyB64String = try getPublicKey()!
+            externalKeyB64String = try getPublicKey(tag: tag)!
         } catch{
             throw error
         }

@@ -12,6 +12,7 @@ class AppPassword extends StatefulWidget {
 }
 
 class _AppPasswordState extends State<AppPassword> { 
+  TextEditingController tag = TextEditingController();
   TextEditingController plainText = TextEditingController();
   TextEditingController plainText2 = TextEditingController();
   TextEditingController cipherText = TextEditingController();
@@ -26,7 +27,7 @@ class _AppPasswordState extends State<AppPassword> {
         actions: [
           IconButton(
               onPressed: () {
-                _secureEnclavePlugin.removeKey();
+                _secureEnclavePlugin.removeKey(tag.text);
               },
               icon: const Icon(Icons.delete))
         ],
@@ -35,6 +36,26 @@ class _AppPasswordState extends State<AppPassword> {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tag'),
+                const SizedBox(
+                  height: 5,
+                ),
+                TextField(
+                  controller: tag,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,7 +84,7 @@ class _AppPasswordState extends State<AppPassword> {
                 try {
                   /// check if tag already on keychain
                   final bool status =
-                      (await _secureEnclavePlugin.isKeyCreated())
+                      (await _secureEnclavePlugin.isKeyCreated(tag.text))
                               .value ??
                           false;
 
@@ -77,7 +98,8 @@ class _AppPasswordState extends State<AppPassword> {
                           // AccessControlOption.or,
                           // AccessControlOption.devicePasscode,
                           AccessControlOption.privateKeyUsage,
-                        ]
+                        ],
+                        tag: tag.text
                       ),
                     );
 
@@ -91,8 +113,9 @@ class _AppPasswordState extends State<AppPassword> {
                   /// encrypt with app password
                   ResultModel cipherUint8List =
                       (await _secureEnclavePlugin.encrypt(
-                    message: plainText.text
-                  ));
+                        message: plainText.text,
+                        tag: tag.text
+                      ));
                   if (cipherUint8List.value != null) {
                     cipherText.text = hex.encode(cipherUint8List.value).toString();
                     //base64Encode(cipherUint8List.value);
@@ -143,7 +166,8 @@ class _AppPasswordState extends State<AppPassword> {
                     // final message = base64Decode(cipherText.text);
                     final message = Uint8List.fromList(hex.decode(cipherText.text));
                     ResultModel plain = (await _secureEnclavePlugin.decrypt(
-                      message: message
+                      message: message,
+                      tag: tag.text
                     ));
 
                     if (plain.value != null) {

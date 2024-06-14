@@ -18,8 +18,9 @@ class SecureEnclave implements SecureEnclaveBase {
   /// decryption with secure enclave key pair
   @override
   Future<ResultModel<String?>> decrypt(
-      {required Uint8List message}) {
+      {required String tag, required Uint8List message}) {
     return SecureEnclavePlatform.instance.decrypt(
+      tag: tag,
       message: message
     );
   }
@@ -27,8 +28,9 @@ class SecureEnclave implements SecureEnclaveBase {
   /// encryption with secure enclave key pair
   @override
   Future<ResultModel<Uint8List?>> encrypt(
-      {required String message}) {
+      { required String tag, required String message}) {
     return SecureEnclavePlatform.instance.encrypt(
+      tag: tag,
       message: message
     );
   }
@@ -45,21 +47,22 @@ class SecureEnclave implements SecureEnclaveBase {
   /// you can share this public key to others device for sending encrypted data
   /// to your device
   @override
-  Future<ResultModel<String?>> getPublicKey() {
-    return SecureEnclavePlatform.instance.getPublicKey();
+  Future<ResultModel<String?>> getPublicKey(String tag) {
+    return SecureEnclavePlatform.instance.getPublicKey(tag);
   }
 
   /// remove key pair
   @override
-  Future<ResultModel<bool>> removeKey() {
-    return SecureEnclavePlatform.instance.removeKey();
+  Future<ResultModel<bool>> removeKey(String tag) {
+    return SecureEnclavePlatform.instance.removeKey(tag);
   }
 
   /// generate signature from data
   @override
   Future<ResultModel<String?>> sign(
-      {required Uint8List message}) {
+      { required String tag, required Uint8List message}) {
     return SecureEnclavePlatform.instance.sign(
+      tag: tag,
       message: message
     );
   }
@@ -67,9 +70,11 @@ class SecureEnclave implements SecureEnclaveBase {
   /// verify signature
   @override
   Future<ResultModel<bool?>> verify(
-      {required String plainText,
+      {required String tag,
+      required String plainText,
       required String signature}) {
     return SecureEnclavePlatform.instance.verify(
+      tag: tag,
       plainText: plainText,
       signature: signature
     );
@@ -77,7 +82,7 @@ class SecureEnclave implements SecureEnclaveBase {
 
   /// check status is tag available or not
   @override
-  Future<ResultModel<bool?>> isKeyCreated() {
-    return SecureEnclavePlatform.instance.isKeyCreated();
+  Future<ResultModel<bool?>> isKeyCreated(String tag) {
+    return SecureEnclavePlatform.instance.isKeyCreated(tag);
   }
 }

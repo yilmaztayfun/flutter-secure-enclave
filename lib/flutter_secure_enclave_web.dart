@@ -23,15 +23,15 @@ import 'package:pointycastle/export.dart';
 /// A web implementation of the FlutterSecureEnclavePlatform of the FlutterSecureEnclave plugin.
 class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
  final FlutterSecureStorage _storage =  FlutterSecureStorage();
- static const String publicKeyStorageKey = 'publicKey';
- static const String privateKeyStorageKey = 'privateKey';
+ static const String publicKeyStorageKey = 'brgnPubKey_';
+ static const String privateKeyStorageKey = 'brgnPvtKey_';
  static void registerWith(Registrar registrar) {
     SecureEnclavePlatform.instance = FlutterSecureEnclaveWeb();
   }
 
   @override
-  Future<ResultModel<String?>> decrypt({required Uint8List message}) async {
-    final privateKey = await getPrivateKey();
+  Future<ResultModel<String?>> decrypt({required String tag, required Uint8List message}) async {
+    final privateKey = await getPrivateKey(tag);
     final decryptor = OAEPEncoding(RSAEngine())..init(false, PrivateKeyParameter<RSAPrivateKey>(privateKey));
     final result =  utf8.decode(_processInBlocks(decryptor, message));
 
@@ -44,8 +44,8 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   }
 
   @override
-  Future<ResultModel<Uint8List?>> encrypt({required String message}) async {
-    final publicKey = await getPublicKeyInernal();
+  Future<ResultModel<Uint8List?>> encrypt({required String tag, required String message}) async {
+    final publicKey = await getPublicKeyInernal(tag);
     final encryptor = OAEPEncoding(RSAEngine())..init(true, PublicKeyParameter<RSAPublicKey>(publicKey));
     final result = _processInBlocks(encryptor, Uint8List.fromList(utf8.encode(message)));
 
@@ -59,7 +59,7 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
 
   @override
   Future<ResultModel<bool>> generateKeyPair({required AccessControlModel accessControl}) async {
-    var keyParams = RSAKeyGeneratorParameters(BigInt.parse('65537'), 2048, 64);
+    var keyParams = RSAKeyGeneratorParameters(BigInt.parse('65537'), 1024, 64);
     var secureRandom = FortunaRandom();
 
     var random = Random.secure();
@@ -78,8 +78,8 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
     var privateKey = pair.privateKey as RSAPrivateKey;
 
     // Save keys to storage
-    await _storage.write(key: publicKeyStorageKey, value: encodePublicKeyToPem(publicKey));
-    await _storage.write(key: privateKeyStorageKey, value: encodePrivateKeyToPem(privateKey));
+    await _storage.write(key: publicKeyStorageKey + accessControl.tag, value: encodePublicKeyToPem(publicKey));
+    await _storage.write(key: privateKeyStorageKey + accessControl.tag, value: encodePrivateKeyToPem(privateKey));
 
     return ResultModel.fromMap(
       map: Map<String, dynamic>.from({"data": true}),
@@ -90,8 +90,8 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   }
 
   @override
-  Future<ResultModel<String?>> getPublicKey() async {
-     var publicKey = await getPublicKeyInernal();
+  Future<ResultModel<String?>> getPublicKey(String tag) async {
+     var publicKey = await getPublicKeyInernal(tag);
      return ResultModel.fromMap(
       map: Map<String, dynamic>.from({"data": publicKey}),
       decoder: (rawData) {
@@ -100,21 +100,21 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
     );
   }
 
-  Future<RSAPrivateKey> getPrivateKey() async {
-    var privateKeyPem = await _storage.read(key: privateKeyStorageKey);
+  Future<RSAPrivateKey> getPrivateKey(String tag) async {
+    var privateKeyPem = await _storage.read(key: privateKeyStorageKey + tag);
     return decodePrivateKeyFromPem(privateKeyPem!);
   }
 
-  Future<RSAPublicKey> getPublicKeyInernal() async {
-      var publicKeyPem = await _storage.read(key: publicKeyStorageKey);
+  Future<RSAPublicKey> getPublicKeyInernal(String tag) async {
+      var publicKeyPem = await _storage.read(key: publicKeyStorageKey + tag);
       return decodePublicKeyFromPem(publicKeyPem!);
   }
 
   @override
-  Future<ResultModel<bool?>> isKeyCreated() async {
+  Future<ResultModel<bool?>> isKeyCreated(String tag) async {
     try {
-      var publicKey = await _storage.containsKey(key: publicKeyStorageKey);
-      var privateKey = await _storage.containsKey(key: publicKeyStorageKey);
+      var publicKey = await _storage.containsKey(key: publicKeyStorageKey + tag);
+      var privateKey = await _storage.containsKey(key: publicKeyStorageKey + tag);
 
       var result = (publicKey && privateKey);
       return ResultModel.fromMap(
@@ -130,9 +130,9 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   }
 
   @override
-  Future<ResultModel<bool>> removeKey() async {
-    await _storage.delete(key: publicKeyStorageKey);
-    await _storage.delete(key: privateKeyStorageKey);
+  Future<ResultModel<bool>> removeKey(String tag) async {
+    await _storage.delete(key: publicKeyStorageKey + tag);
+    await _storage.delete(key: privateKeyStorageKey + tag);
     return ResultModel.fromMap(
       map: Map<String, dynamic>.from({"data": true}),
       decoder: (rawData) {
@@ -142,8 +142,8 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   }
 
   @override
-  Future<ResultModel<String?>> sign({required Uint8List message}) async {
-    final privateKey = await getPrivateKey();
+  Future<ResultModel<String?>> sign({required String tag, required Uint8List message}) async {
+    final privateKey = await getPrivateKey(tag);
     final signer = RSASigner(SHA256Digest(), '0609608648016503040201')
       ..init(true, PrivateKeyParameter<RSAPrivateKey>(privateKey));
     var result = signer.generateSignature(message).bytes;
@@ -157,8 +157,8 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   }
 
   @override
-  Future<ResultModel<bool?>> verify({required String plainText, required String signature}) async {
-    final publicKey = await getPublicKeyInernal();
+  Future<ResultModel<bool?>> verify({required String tag, required String plainText, required String signature}) async {
+    final publicKey = await getPublicKeyInernal(tag);
     final verifier = RSASigner(SHA256Digest(), '0609608648016503040201')
       ..init(false, PublicKeyParameter<RSAPublicKey>(publicKey));
 

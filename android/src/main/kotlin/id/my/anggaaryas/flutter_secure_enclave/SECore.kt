@@ -33,36 +33,36 @@ interface SECoreProtocol {
     fun generateKeyPair(accessControlParam: AccessControlParam): KeyPair
 
     @Throws(Exception::class)
-    fun removeKey(): Boolean
+    fun removeKey(tag: String): Boolean
 
     @Throws(Exception::class)
-    fun isKeyCreated(): Boolean?
+    fun isKeyCreated(tag: String): Boolean?
 
     @Throws(Exception::class)
-    fun getPublicKey(): String?
+    fun getPublicKey(tag: String): String?
 
     @Throws(Exception::class)
-    fun encrypt(message: String): ByteArray?
+    fun encrypt(message: String, tag: String): ByteArray?
 
     @Throws(Exception::class)
-    fun decrypt(message: ByteArray): String?
+    fun decrypt(message: ByteArray, tag: String): String?
 
     @Throws(Exception::class)
-    fun sign(message: ByteArray): String?
+    fun sign(tag: String, message: ByteArray): String?
 
     @Throws(Exception::class)
-    fun verify(plainText: String, signature: String): Boolean
+    fun verify(tag: String, plainText: String, signature: String): Boolean
 }
 
 class SECore : SECoreProtocol {
-    private val KEY_ALIAS = "mtls.burgan.com.tr"
     private val KEYSTORE_PROVIDER = "AndroidKeyStore"
 
     override fun generateKeyPair(accessControlParam: AccessControlParam): KeyPair {
         val keyPairGenerator = KeyPairGenerator.getInstance("RSA", KEYSTORE_PROVIDER)
 
+        val alias = accessControlParam.tag
         val parameterSpecBuilder = KeyGenParameterSpec.Builder(
-            KEY_ALIAS,
+            alias,
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT or KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
         )
             .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
@@ -77,45 +77,45 @@ class SECore : SECoreProtocol {
         return keyPair
     }
 
-    override fun removeKey(): Boolean {
+    override fun removeKey(tag: String): Boolean {
         val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        keyStore.deleteEntry(KEY_ALIAS)
+        keyStore.deleteEntry(tag)
         return true
     }
 
-    internal fun getSecKey(): KeyPair? {
+    internal fun getSecKey(tag: String): KeyPair? {
         val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        val privateKey = keyStore.getKey(KEY_ALIAS, null) as PrivateKey
-        val publicKey = keyStore.getCertificate(KEY_ALIAS)?.publicKey
+        val privateKey = keyStore.getKey(tag, null) as PrivateKey
+        val publicKey = keyStore.getCertificate(tag)?.publicKey
         return if (privateKey != null && publicKey != null) KeyPair(publicKey, privateKey) else null
     }
 
-    override fun isKeyCreated(): Boolean? {
-        val secKey = getSecKey()
+    override fun isKeyCreated(tag: String): Boolean? {
+        val secKey = getSecKey(tag)
         return secKey != null
     }
 
-    override fun getPublicKey(): String? {
-        val publicKey = getPublicKeyFromKeyStore()
+    override fun getPublicKey(tag: String): String? {
+        val publicKey = getPublicKeyFromKeyStore(tag)
         return Base64.getEncoder().encodeToString(publicKey.encoded)
     }
 
-    override fun encrypt(message: String): ByteArray? {
+    override fun encrypt(message: String, tag: String): ByteArray? {
         val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, getPublicKeyFromKeyStore())
+        cipher.init(Cipher.ENCRYPT_MODE, getPublicKeyFromKeyStore(tag))
         val encryptedBytes = cipher.doFinal(message.toByteArray())
         return encryptedBytes;
     }
 
-    override fun decrypt(message: ByteArray): String? {
+    override fun decrypt(message: ByteArray, tag: String): String? {
         val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
-        cipher.init(Cipher.DECRYPT_MODE, getPrivateKeyFromKeyStore())
+        cipher.init(Cipher.DECRYPT_MODE, getPrivateKeyFromKeyStore(tag))
         val decryptedBytes = cipher.doFinal(message)
         return String(decryptedBytes)
     }
 
-    override fun sign(message: ByteArray): String? {
-        val privateKey = getPrivateKeyFromKeyStore()
+    override fun sign(tag: String, message: ByteArray): String? {
+        val privateKey = getPrivateKeyFromKeyStore(tag)
         val signatureInstance = Signature.getInstance("SHA256withRSA")
         signatureInstance.initSign(privateKey)
         signatureInstance.update(message)
@@ -123,8 +123,8 @@ class SECore : SECoreProtocol {
         return Base64.getEncoder().encodeToString(signatureBytes)
     }
 
-    override fun verify(plainText: String, signatureText: String): Boolean {
-        val publicKey = getPublicKeyFromKeyStore()
+    override fun verify(tag: String, plainText: String, signatureText: String): Boolean {
+        val publicKey = getPublicKeyFromKeyStore(tag)
         val signature = Signature.getInstance("SHA256withRSA")
         signature.initVerify(publicKey)
         signature.update(plainText.toByteArray())
@@ -132,13 +132,13 @@ class SECore : SECoreProtocol {
         return signature.verify(signatureBytes)
     }
 
-    private fun getPublicKeyFromKeyStore(): PublicKey {
+    private fun getPublicKeyFromKeyStore(tag: String): PublicKey {
         val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        return keyStore.getCertificate(KEY_ALIAS).publicKey
+        return keyStore.getCertificate(tag).publicKey
     }
 
-    private fun getPrivateKeyFromKeyStore(): PrivateKey {
+    private fun getPrivateKeyFromKeyStore(tag: String): PrivateKey {
         val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
-        return keyStore.getKey(KEY_ALIAS, null) as PrivateKey
+        return keyStore.getKey(tag, null) as PrivateKey
     }
 }

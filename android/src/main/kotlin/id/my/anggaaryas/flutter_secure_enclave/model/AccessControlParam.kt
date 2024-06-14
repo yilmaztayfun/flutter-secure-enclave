@@ -14,7 +14,7 @@ enum class SecAccessControlCreateFlags {
 }
 
 class AccessControlParam(value: Map<String, Any?>) {
-
+    val tag: String = value["tag"] as String
     var option: EnumSet<SecAccessControlCreateFlags> = EnumSet.noneOf(SecAccessControlCreateFlags::class.java)
 
     init {

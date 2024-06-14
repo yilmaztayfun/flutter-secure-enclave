@@ -9,10 +9,12 @@ import Foundation
 
 @available(iOS 11.3, *)
 class AccessControlParam{
+    let tag : String
     var option: SecAccessControlCreateFlags = []
     
     init(value: Dictionary<String, Any>){
         print(value)
+        self.tag = value["tag"] as! String
         buildOption(optionsParam: value["options"] as! Array<String>)
     }
     

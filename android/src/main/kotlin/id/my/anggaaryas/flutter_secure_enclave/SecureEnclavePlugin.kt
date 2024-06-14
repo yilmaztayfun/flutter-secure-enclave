@@ -57,7 +57,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "removeKey" -> {
                 try {
-                    seCore.removeKey()
+                    val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
+                    seCore.removeKey(tag)
                     result.success(mapOf("status" to "success", "data" to true))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -65,7 +67,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "isKeyCreated" -> {
                 try {
-                    val isCreated = seCore.isKeyCreated()
+                    val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
+                    val isCreated = seCore.isKeyCreated(tag)
                     result.success(mapOf("status" to "success", "data" to isCreated))
                 } catch (e: Exception) {
                     result.success(mapOf("status" to "success", "data" to false))
@@ -73,7 +77,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             }
             "getPublicKey" -> {
                 try {
-                    val publicKey = seCore.getPublicKey()
+                    val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
+                    val publicKey = seCore.getPublicKey(tag)
                     result.success(mapOf("status" to "success", "data" to publicKey))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -82,8 +88,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "encrypt" -> {
                 try {
                     val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
                     val message = param?.get("message") as? String ?: ""
-                    val encrypted = seCore.encrypt(message)
+                    val encrypted = seCore.encrypt(message, tag)
                     result.success(mapOf("status" to "success", "data" to encrypted))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -92,8 +99,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "decrypt" -> {
                 try {
                     val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
                     val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
-                    val decrypted = seCore.decrypt(messageBytes)
+                    val decrypted = seCore.decrypt(messageBytes, tag)
                     result.success(mapOf("status" to "success", "data" to decrypted))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -102,8 +110,9 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "sign" -> {
                 try {
                     val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
                     val messageBytes = (param?.get("message") as? ByteArray) ?: byteArrayOf()
-                    val signature = seCore.sign(messageBytes)
+                    val signature = seCore.sign(tag, messageBytes)
                     result.success(mapOf("status" to "success", "data" to signature))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)
@@ -112,9 +121,10 @@ class SecureEnclavePlugin: FlutterPlugin, MethodCallHandler {
             "verify" -> {
                 try {
                     val param = call.arguments as? Map<String, Any>
+                    val tag = param?.get("tag") as? String ?: ""
                     val signatureText = param?.get("signature") as? String ?: ""
                     val plainText = param?.get("plainText") as? String ?: ""
-                    val isValid = seCore.verify(plainText, signatureText)
+                    val isValid = seCore.verify(tag, plainText, signatureText)
                     result.success(mapOf("status" to "success", "data" to isValid))
                 } catch (e: Exception) {
                     result.error("ERROR", e.localizedMessage, null)

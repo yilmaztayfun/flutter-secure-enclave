@@ -8,25 +8,29 @@ abstract class SecureEnclaveBase {
     required AccessControlModel accessControl,
   });
 
-  Future<ResultModel<bool>> removeKey();
+  Future<ResultModel<bool>> removeKey(String tag);
 
-  Future<ResultModel<String?>> getPublicKey();
+  Future<ResultModel<String?>> getPublicKey(String tag);
 
-  Future<ResultModel<bool?>> isKeyCreated();
+  Future<ResultModel<bool?>> isKeyCreated(String tag);
 
   Future<ResultModel<Uint8List?>> encrypt({
+     required String tag,
     required String message
   });
 
   Future<ResultModel<String?>> decrypt({
+    required String tag,
     required Uint8List message
   });
 
   Future<ResultModel<String?>> sign({
+    required String tag,
     required Uint8List message
   });
 
   Future<ResultModel<bool?>> verify({
+    required String tag,
     required String plainText,
     required String signature
   });

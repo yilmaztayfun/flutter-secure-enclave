@@ -27,8 +27,9 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
             
         case "removeKey":
             do{
-                let param = call.arguments as? Dictionary<String, Any>               
-                let isSuccess = try seCore.removeKey()
+                let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String             
+                let isSuccess = try seCore.removeKey(tag: tag)
                 result(resultSuccess(data:isSuccess))
             } catch {
                 result(resultError(error:error))
@@ -37,7 +38,8 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "isKeyCreated":
             do{
                 let param = call.arguments as? Dictionary<String, Any>
-                let key = try seCore.isKeyCreated()
+                let tag = param!["tag"] as! String
+                let key = try seCore.isKeyCreated(tag: tag)
                 result(resultSuccess(data:key!))
             } catch {
                 result(resultSuccess(data:false))
@@ -46,7 +48,8 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "getPublicKey":
             do{
                 let param = call.arguments as? Dictionary<String, Any>
-                let key = try seCore.getPublicKey()
+                let tag = param!["tag"] as! String
+                let key = try seCore.getPublicKey(tag: tag)
                 result(resultSuccess(data:key!))
             } catch {
                 result(resultError(error:error))
@@ -55,8 +58,9 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "encrypt" :
             do{
                 let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
                 let message = param!["message"] as! String
-                let encrypted = try seCore.encrypt(message: message)
+                let encrypted = try seCore.encrypt(message: message, tag: tag)
                 result(resultSuccess(data:encrypted))
             } catch {
                 result(resultError(error:error))
@@ -65,8 +69,9 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "decrypt" :
             do{
                 let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
                 let message = param!["message"] as! FlutterStandardTypedData
-                let decrypted = try seCore.decrypt(message: message.data)
+                let decrypted = try seCore.decrypt(message: message.data, tag: tag)
                 result(resultSuccess(data:decrypted))
             } catch {
                 result(resultError(error:error))
@@ -75,9 +80,9 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "sign" :
             do{
                 let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
                 let message = param!["message"] as! FlutterStandardTypedData
-                let signature = try seCore.sign(message: message.data
-                )
+                let signature = try seCore.sign(tag: tag, message: message.data)
                 
                 result(resultSuccess(data:signature))
             } catch {
@@ -87,10 +92,11 @@ public class SwiftSecureEnclavePlugin: NSObject, FlutterPlugin {
         case "verify" :
             do{
                 let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
                 let signatureText = param!["signature"] as! String
                 let plainText = param!["plainText"] as! String
                 let signature = try seCore.verify(
-                    plainText: plainText, signature: signatureText
+                    tag: tag, plainText: plainText, signature: signatureText
                 )
                 
                 result(resultSuccess(data:signature))
