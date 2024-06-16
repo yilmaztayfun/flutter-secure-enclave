@@ -1,44 +1,8 @@
-//
-//  SECore.swift
-//  secure_enclave
-//
-//  Created by Angga Arya Saputra on 18/08/22.
-//
-
 import Foundation
 import LocalAuthentication
 
-// Abstraction/Protocol class of SECore
 @available(iOS 11.3, *)
-protocol SECoreProtocol {
-    // create and store private key to secure enclave
-    func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey
-    
-    // remove key from secure enclave
-    func removeKey(tag: String) throws -> Bool
-    
-    // get status SecKey key from secure enclave (private method)
-    func isKeyCreated(tag: String) throws -> Bool?
-    
-    // get publicKey key from secure enclave
-    func getPublicKey(tag: String) throws -> String?
-    
-    // encryption
-    func encrypt(message: String, tag: String) throws -> FlutterStandardTypedData?
-    
-    // decryption
-    func decrypt(message: Data, tag: String) throws -> String?
-    
-    // sign
-    func sign(tag: String, message: Data) throws -> String?
-    
-    // verify
-    func verify(tag: String, plainText: String, signature: String) throws -> Bool
-}
-
-
-@available(iOS 11.3, *)
-class SECore : SECoreProtocol {
+class ModernEncryptionStrategy : EncryptionStrategy {
     func generateKeyPair(accessControlParam: AccessControlParam) throws -> SecKey  {
         // options
         let secAccessControlCreateFlags: SecAccessControlCreateFlags = accessControlParam.option
@@ -84,18 +48,6 @@ class SECore : SECoreProtocol {
                     ]
                 ]
             }
-            
-            // // cek kalau pakai app password, tambahkan password nya
-            // if accessControlParam.option.contains(.applicationPassword) {
-            //    let context = LAContext()
-            //    var newPassword : Data?
-            //    if accessControlParam.password != "" {
-            //        newPassword = accessControlParam.password?.data(using: .utf8)
-            //    }
-            //    context.setCredential(newPassword, type: .applicationPassword)
-                
-            //    parameterTemp[kSecUseAuthenticationContext as String] = context
-            // }
             
             // convert ke CFDictinery
             parameter = parameterTemp as CFDictionary

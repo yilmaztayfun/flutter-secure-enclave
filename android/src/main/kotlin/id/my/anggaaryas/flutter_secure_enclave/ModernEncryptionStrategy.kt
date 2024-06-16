@@ -28,34 +28,8 @@ import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.common.StandardMethodCodec
 import io.flutter.plugin.common.StandardMethodCodec.INSTANCE
 
-interface SECoreProtocol {
-    @Throws(Exception::class)
-    fun generateKeyPair(accessControlParam: AccessControlParam): KeyPair
-
-    @Throws(Exception::class)
-    fun removeKey(tag: String): Boolean
-
-    @Throws(Exception::class)
-    fun isKeyCreated(tag: String): Boolean?
-
-    @Throws(Exception::class)
-    fun getPublicKey(tag: String): String?
-
-    @Throws(Exception::class)
-    fun encrypt(message: String, tag: String): ByteArray?
-
-    @Throws(Exception::class)
-    fun decrypt(message: ByteArray, tag: String): String?
-
-    @Throws(Exception::class)
-    fun sign(tag: String, message: ByteArray): String?
-
-    @Throws(Exception::class)
-    fun verify(tag: String, plainText: String, signature: String): Boolean
-}
-
-class SECore : SECoreProtocol {
-    private val KEYSTORE_PROVIDER = "AndroidKeyStore"
+class ModernEncryptionStrategy : EncryptionStrategy {
+    private val KEYSTORE_PROVIDER = "BurganKeyStore"
 
     override fun generateKeyPair(accessControlParam: AccessControlParam): KeyPair {
         val keyPairGenerator = KeyPairGenerator.getInstance("RSA", KEYSTORE_PROVIDER)
