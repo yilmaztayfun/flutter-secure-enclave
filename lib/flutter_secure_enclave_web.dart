@@ -114,7 +114,7 @@ class FlutterSecureEnclaveWeb extends SecureEnclavePlatform {
   Future<ResultModel<bool?>> isKeyCreated(String tag) async {
     try {
       var publicKey = await _storage.containsKey(key: publicKeyStorageKey + tag);
-      var privateKey = await _storage.containsKey(key: publicKeyStorageKey + tag);
+      var privateKey = await _storage.containsKey(key: privateKeyStorageKey + tag);
 
       var result = (publicKey && privateKey);
       return ResultModel.fromMap(
