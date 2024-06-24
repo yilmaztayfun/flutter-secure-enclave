@@ -21,7 +21,6 @@
 
 //   test('test AppPassword', () async {
 //     AccessControl accessControl =  AppPasswordAccessControl(
-//       password: "aaaa",
 //       options: [],
 //       tag: "coba"
 //     );
