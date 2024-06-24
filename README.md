@@ -1,6 +1,6 @@
-# secure_enclave
+# Secure Enclave
 
-Apple Secure Enclave implementaton for Flutter
+Apple, Android and Web Secure Enclave implementaton for Flutter
 
 # What is a Secure Enclave? 👮
 *The Secure Enclave is a dedicated secure subsystem integrated into Apple systems on chip (SoCs). The Secure Enclave is isolated from the main processor to provide an extra layer of security and is designed to keep sensitive user data secure even when the Application Processor kernel becomes compromised.* https://support.apple.com/en-ie/guide/security/sec59b0b31ff/web
@@ -17,36 +17,11 @@ Apple Secure Enclave implementaton for Flutter
 
 ✅ Encrypt
 
-✅ Encrypt with Public Key
-
 ✅ Decrypt
 
 ✅ Sign
 
 ✅ Verify
-
-✅ Flags ([reference](https://developer.apple.com/documentation/security/secaccesscontrolcreateflags "reference"))
-- devicePasscode ✅
-- biometryAny ✅
-- biometryCurrentSet ✅
-- userPresence ✅
-- watch ✅
-- and ✅
-- or ✅
-- applicationPassword ✅
-- privateKeyUsage ✅
-
-🚧 Accessible ([reference](https://developer.apple.com/documentation/security/keychain_services/keychain_items/item_attribute_keys_and_values "reference"))
-- kSecAttrAccessibleWhenUnlockedThisDeviceOnly ✅
-- kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly ⌛
-- kSecAttrAccessibleWhenUnlocked ⌛
-- kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly ⌛
-- kSecAttrAccessibleAfterFirstUnlock ⌛
-
-🚧 Algorithm ([reference](https://developer.apple.com/documentation/security/seckeyalgorithm "reference"))
-- eciesEncryptionCofactorVariableIVX963SHA256AESGCM ✅
-- ecdsaSignatureMessageX962SHA256 ✅
-- others ... ⌛
 
 # How to Use 🚀
 
@@ -62,11 +37,7 @@ final _secureEnclavePlugin = SecureEnclave();
 
 ResultModel res = await _secureEnclavePlugin.generateKeyPair(
     accessControl: AccessControlModel(
-      password: 'jakarta123', // Fill this password if you want custom pop up dialog of .applicationPassword.
-
       options: [
-        AccessControlOption.applicationPassword,
-        AccessControlOption.privateKeyUsage,
       ],
       tag: 'kota',
     ),
@@ -79,7 +50,6 @@ if (res.error != null) {
 }
  
 ```
-
 
 📢 **Get Public Key :**
 ```dart
@@ -101,24 +71,7 @@ final _secureEnclavePlugin = SecureEnclave();
 
 ResultModel res = await _secureEnclavePlugin.encrypt(
     message: 'hello jakarta',
-    tag: 'kota',
-    password: 'jakarta123',
-);
-
-if (res.error != null) {
-	print(res.error!.desc.toString());
-} else {
-	print(res.value); // Uint8List
-}
-```
-
-🔐 **Encrypt with Public Key:**
-```dart
-final _secureEnclavePlugin = SecureEnclave();
-
-ResultModel res = await _secureEnclavePlugin.encrypt(
-    message: 'hello jakarta',
-    publicKey: 'T57xZkDf2WPN8BT2Qlg2LiaBEVCRDw1Xq8aWQQfil' // base64 encode
+    tag: 'kota'
 );
 
 if (res.error != null) {
@@ -134,8 +87,7 @@ final _secureEnclavePlugin = SecureEnclave();
 
 ResultModel res = await _secureEnclavePlugin.decrypt(
     message: Uint8List.fromList(hex.decode('iasjfoiaj2EL3EL')), // hex => Uint8List
-    tag: 'kota',
-    password: 'jakarta123',
+    tag: 'kota'
 );
 
 if (res.error != null) {
@@ -151,8 +103,7 @@ final _secureEnclavePlugin = SecureEnclave();
 
 ResultModel res = await _secureEnclavePlugin.sign(
     message: Uint8List.fromList('hello jakarta'.codeUnits), // String => Uint8List
-    tag: 'kota',
-    password: 'jakarta123',
+    tag: 'kota'
 );
 
 if (res.error != null) {
@@ -169,8 +120,7 @@ final _secureEnclavePlugin = SecureEnclave();
 ResultModel res = await _secureEnclavePlugin.verify(
 	plainText: 'hello jakarta',
     signature: 'fDrPlGl48R8DPCGNTsAticYfx3RoWPKxEHQ2pHWrBDGk887UwWYGVTSSUj6LciietChBULEs ',
-    tag: 'kota',
-    password: 'jakarta123',
+    tag: 'kota'
 );
 
 if (res.error != null) {
@@ -180,29 +130,5 @@ if (res.error != null) {
 }
 ```
 
-
-
-
-# Youtube Tutorial 
-
-Here some Tutorial about how to use secure enclave and the  quick explanation for about Secure Enclave in Bahasa. 
-
-
-#### Explanation
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=DXhJjv15u5M
-" target="_blank"><img src="https://i9.ytimg.com/vi/DXhJjv15u5M/mqdefault.jpg?v=63196db0&sqp=CNDH9JoG&rs=AOn4CLD9LYuaooBrS9xEcm9EwaIcsMFc6Q" 
-alt="IMAGE ALT TEXT HERE" width="300" height="180" border="10" /></a>
-
-------------
-
-
-#### How to use
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=8XUjrZiKOGU
-" target="_blank"><img src="https://i9.ytimg.com/vi/8XUjrZiKOGU/mqdefault.jpg?v=635cfa56&sqp=CKTF9JoG&rs=AOn4CLByzKL7OLwBqcJ8tK5NFfuC-AezPQ" 
-alt="IMAGE ALT TEXT HERE" width="300" height="180" border="10" /></a>
-
-------------
- 
-
-
+## Rerefences
+- https://github.com/anggaaryas/flutter-secure-enclave
